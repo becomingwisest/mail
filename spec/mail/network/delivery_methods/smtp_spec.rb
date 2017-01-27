@@ -242,4 +242,25 @@ describe "SMTP Delivery Method" do
     end
   end
 
+  describe "Verifying the peer certificate" do
+    def redefine_verify_none(new_value)
+      OpenSSL::SSL.send(:remove_const, :VERIFY_NONE)
+      OpenSSL::SSL.send(:const_set, :VERIFY_NONE, new_value)
+    end
+
+    it "should raise an error if :ca_file and :ca_path are missing" do
+      expect do
+        redefine_verify_none(0)
+        Mail.defaults do
+          delivery_method :smtp, :address => 'smtp.mockup.com', :port => 587, :tls => true, :openssl_verify_mode => 'peer'
+        end
+
+        mail = Mail.deliver do
+          from    'roger@moore.com'
+          to      'marcel@amont.com'
+          subject 'invalid RFC2822'
+        end
+      end.to raise_error(RuntimeError, "Invalid configuration for SMTP Host smtp.mockup.com: :openssl_verify_mode set to VERIFY_PEER, but neither setting of :ca_path :ca_file has been specified.")
+    end
+  end
 end

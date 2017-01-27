@@ -141,6 +141,14 @@ module Mail
       context.verify_mode = openssl_verify_mode
       context.ca_path = settings[:ca_path] if settings[:ca_path]
       context.ca_file = settings[:ca_file] if settings[:ca_file]
+
+      # Fail if we want to verify the connection via VERIFY_PEER
+      # but there isn't a ca_path, or a ca_file specified
+      # we should raise a configuration error
+      if context.verify_mode == OpenSSL::SSL::VERIFY_PEER &&
+        !(context.ca_path or context.ca_file) then
+        raise "Invalid configuration for SMTP Host #{settings[:address]}: :openssl_verify_mode set to VERIFY_PEER, but neither setting of :ca_path :ca_file has been specified."
+      end
       context
     end
   end

@@ -288,6 +288,26 @@ Mail.defaults do
 end
 ```
 
+or
+
+via SMTP verifying the ssl certificate using openssl_verify_mode: 'peer'. It may require ca_file: or ca_path:.
+```ruby
+
+Mail.defaults do 
+  delivery_method :smtp, {
+        address: 'smtp.sendgrid.net',
+        port: 587,
+        domain: ENV.fetch('SMTP_DOMAIN'),
+        user_name: ENV.fetch('SMTP_USERNAME'),
+        password: ENV.fetch('SMTP_PASSWORD'),
+        authentication: 'plain',
+        enable_starttls_auto: true,
+        openssl_verify_mode: 'peer',
+        ca_file: '/usr/local/etc/openssl/cert.pem'
+    } 
+  
+end
+```
 
 Exim requires its own delivery manager, and can be used like so:
 
